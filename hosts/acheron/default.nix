@@ -6,7 +6,7 @@
   username = "martin";
   hostname = "acheron";
 
-  isDesktop = true;
+  formFactor = "desktop";
   isGaming = true;
 
   gpu = "nvidia";

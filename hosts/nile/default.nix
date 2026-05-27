@@ -4,7 +4,7 @@
   username = "martin";
   hostname = "nile";
 
-  isLaptop = true;
+  formFactor = "laptop";
   isDev = true;
   isWork = true;
 

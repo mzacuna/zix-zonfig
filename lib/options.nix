@@ -13,13 +13,23 @@ let
       description = description;
       readOnly = true;
     };
-  mkEnum = variants: lib.mkOption { type = lib.types.enum variants; };
+  mkEnum =
+    variants:
+    lib.mkOption {
+      type = lib.types.nullOr (lib.types.enum variants);
+      default = null;
+    };
 in
 {
   options = {
-    isDesktop = lib.mkEnableOption "desktop configuration";
-    isLaptop = lib.mkEnableOption "laptop configuration";
-    isPC = mkDerived (config.isDesktop || config.isLaptop) "Personal computer configuration";
+    formFactor = lib.mkOption {
+      type = lib.types.enum [
+        "desktop"
+        "laptop"
+        "server"
+      ];
+    };
+    isPC = mkDerived (config.formFactor != "server") "Personal computer (non-server) configuration";
 
     isLinux = mkDerived pkgs.stdenv.hostPlatform.isLinux "Linux configuration";
     isDarwin = mkDerived pkgs.stdenv.hostPlatform.isDarwin "Darwin configuration";

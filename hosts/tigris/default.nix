@@ -9,7 +9,7 @@
   username = "martin";
   hostname = "tigris";
 
-  isLaptop = true;
+  formFactor = "laptop";
   isDev = true;
   isWork = true;
 
