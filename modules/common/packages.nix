@@ -28,9 +28,6 @@
         pkgs.nixfmt # Nix formatter
         pkgs.nixd # Nix language server
         pkgs.gopls # Go language server
-        pkgs.claude-code # Agentic AI coding tool by Anthropic
-        pkgs.claude-agent-acp # Shim to use Claude with ACP
-        pkgs.codex # Agentic AI coding tool by OpenAI
         pkgs.basedpyright # Python language server
       ];
     }
