@@ -36,7 +36,7 @@
           pkgs.papirus-icon-theme # Icon theme
         ]
         ++ lib.optionals config.isDev [
-          pkgs.jetbrains.idea-ultimate # Java development
+          pkgs.jetbrains.idea # Java development
           pkgs.jetbrains.phpstorm # PHP development
           pkgs.jetbrains.rider # .NET development
           pkgs.postman # You know what Postman is
