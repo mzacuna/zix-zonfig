@@ -1,11 +1,12 @@
 *
 
 !*.nix
-!*.md
 !*.age
 !*.json
 !*.nu
 !*.el
+
+!README.md
 
 !flake.lock
 
