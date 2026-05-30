@@ -584,10 +584,7 @@ root, but the current buffer belongs to a nested project."
 (use-package olivetti
   :hook (text-mode . olivetti-mode)
   :config
-  ;; This crashes and burns if it's an integer because something in Olivetti
-  ;; doesn't expect that the face height would be a lambda (see "Font").
-  ;; (I'm not actually using a lambda height anymore but I'll keep it decimal.)
-  (setq olivetti-body-width 0.68))
+  (setq olivetti-body-width 74))
 
 ;; Spell-checking. Jinx is a fast, modern replacement for flyspell.
 (use-package jinx
