@@ -14,6 +14,7 @@
     "monitorcontrol"
     "linearmouse"
     "obs"
+    "tailscale-app"
     "whatsapp"
     "spotify"
     "intellij-idea"

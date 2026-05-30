@@ -1,7 +1,18 @@
-{ lib, ... }:
+{ ... }:
 
 {
-  imports = lib.optional (builtins.pathExists ../../private/ssh.nix) ../../private/ssh.nix;
+  services.openssh = {
+    enable = true;
+
+    # Don't automatically open port 22.
+    openFirewall = false;
+
+    settings = {
+      KbdInteractiveAuthentication = false;
+      PasswordAuthentication = false;
+      PermitRootLogin = "no";
+    };
+  };
 
   home-manager.sharedModules = [
     {
