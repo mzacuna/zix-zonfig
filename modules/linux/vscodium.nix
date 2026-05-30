@@ -5,7 +5,7 @@
   ...
 }:
 
-lib.mkIf config.isPC {
+lib.mkIf config.flags.profiles.graphical {
   home-manager.sharedModules = [
     {
       programs.vscodium = {

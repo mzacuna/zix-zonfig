@@ -5,7 +5,7 @@
   ...
 }:
 
-lib.mkIf config.isDev {
+lib.mkIf config.flags.profiles.development {
   home-manager.sharedModules = [
     {
       programs.codex.enable = true;

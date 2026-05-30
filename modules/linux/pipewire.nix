@@ -1,6 +1,6 @@
 { config, lib, ... }:
 
-lib.mkIf config.isPC {
+lib.mkIf config.flags.profiles.graphical {
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;

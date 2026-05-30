@@ -18,13 +18,14 @@
         pkgs.jc # Converts many outputs to JSON
         pkgs.fzf # Fuzzy finder
         pkgs.rage # Encryption tool
+        pkgs.nh # nixos/darwin-rebuild wrapper with closure diffs
       ]
-      ++ lib.optionals config.isPC [
+      ++ lib.optionals config.flags.profiles.interactive [
         pkgs.ffmpeg
         pkgs.yt-dlp
         pkgs.ragenix
       ]
-      ++ lib.optionals config.isDev [
+      ++ lib.optionals config.flags.profiles.development [
         pkgs.nixfmt # Nix formatter
         pkgs.nixd # Nix language server
         pkgs.gopls # Go language server

@@ -10,8 +10,24 @@
   hostname = "tigris";
 
   formFactor = "laptop";
-  isDev = true;
-  isWork = true;
+
+  flags = {
+    profiles = {
+      development = false;
+      graphical = false;
+      interactive = false;
+      work = false;
+    };
+
+    tailnet.ssh = {
+      client = false;
+      target = true;
+    };
+
+    network.networkManager = true;
+
+    virtualisation.containers = true;
+  };
 
   gpu = "amd";
 

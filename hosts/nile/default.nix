@@ -5,8 +5,11 @@
   hostname = "nile";
 
   formFactor = "laptop";
-  isDev = true;
-  isWork = true;
+
+  flags.profiles = {
+    development = true;
+    work = true;
+  };
 
   home-manager.users."${config.username}".home = {
     stateVersion = "25.05";

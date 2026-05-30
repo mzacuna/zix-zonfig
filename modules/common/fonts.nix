@@ -5,7 +5,7 @@
   ...
 }:
 
-lib.mkIf config.isPC {
+lib.mkIf config.flags.profiles.graphical {
   home-manager.sharedModules = [
     {
       home.packages = [
@@ -20,6 +20,6 @@ lib.mkIf config.isPC {
       ];
     }
 
-    (lib.mkIf config.isLinux { fonts.fontconfig.enable = true; })
+    (lib.mkIf config.flags.system.linux { fonts.fontconfig.enable = true; })
   ];
 }

@@ -5,7 +5,7 @@
   ...
 }:
 
-lib.mkIf config.isPC {
+lib.mkIf config.flags.profiles.graphical {
   services.xserver.xkb.extraLayouts = {
     tangent_qwerty = {
       description = "Tangent QWERTY layout";

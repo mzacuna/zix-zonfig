@@ -1,8 +1,15 @@
 { config, lib, ... }:
 
-lib.mkIf config.isPC {
-  networking.hostName = config.hostname;
-  networking.networkmanager.enable = true;
+lib.mkMerge [
+  {
+    networking.hostName = config.hostname;
+  }
 
-  hardware.bluetooth.enable = true;
-}
+  (lib.mkIf config.flags.network.networkManager {
+    networking.networkmanager.enable = true;
+  })
+
+  (lib.mkIf config.flags.hardware.bluetooth {
+    hardware.bluetooth.enable = true;
+  })
+]

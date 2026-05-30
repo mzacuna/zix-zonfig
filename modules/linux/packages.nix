@@ -9,7 +9,7 @@
   home-manager.sharedModules = [
     {
       home.packages =
-        lib.optionals config.isPC [
+        lib.optionals config.flags.profiles.graphical [
           pkgs.discord # Messaging platform
           pkgs.discord-ptb # Public Test Build
           pkgs.discord-canary # Bleeding edge
@@ -35,7 +35,7 @@
           pkgs.wl-clipboard
           pkgs.papirus-icon-theme # Icon theme
         ]
-        ++ lib.optionals config.isDev [
+        ++ lib.optionals config.flags.profiles.development [
           pkgs.jetbrains.idea # Java development
           pkgs.jetbrains.phpstorm # PHP development
           pkgs.jetbrains.rider # .NET development

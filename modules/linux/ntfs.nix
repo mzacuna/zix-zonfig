@@ -1,3 +1,3 @@
 { config, lib, ... }:
 
-lib.mkIf config.isPC { boot.supportedFilesystems = [ "ntfs" ]; }
+lib.mkIf config.flags.profiles.graphical { boot.supportedFilesystems = [ "ntfs" ]; }

@@ -1,6 +1,6 @@
 { config, lib, ... }:
 
-lib.mkIf config.isWork {
+lib.mkIf config.flags.virtualisation.containers {
   virtualisation.containers.enable = true;
 
   virtualisation = {

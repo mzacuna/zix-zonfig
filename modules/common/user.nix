@@ -17,6 +17,6 @@
       "bluetooth"
       "video"
     ]
-    ++ lib.optionals config.isWork [ "podman" ];
+    ++ lib.optionals config.flags.virtualisation.containers [ "podman" ];
   };
 }

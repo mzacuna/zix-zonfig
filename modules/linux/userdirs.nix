@@ -1,6 +1,6 @@
 { config, lib, ... }:
 
-lib.mkIf config.isPC {
+lib.mkIf config.flags.profiles.graphical {
   home-manager.sharedModules = [
     {
       xdg.userDirs = {

@@ -5,7 +5,7 @@
   ...
 }:
 
-lib.mkIf config.isPC {
+lib.mkIf config.flags.profiles.graphical {
   services.displayManager.sddm = {
     enable = true;
     wayland.enable = true;

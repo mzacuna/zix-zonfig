@@ -7,7 +7,8 @@
   hostname = "acheron";
 
   formFactor = "desktop";
-  isGaming = true;
+
+  flags.profiles.gaming = true;
 
   gpu = "nvidia";
 

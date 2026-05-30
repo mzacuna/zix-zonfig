@@ -24,7 +24,7 @@
         };
       };
     }
-    (lib.mkIf config.isPC {
+    (lib.mkIf config.flags.profiles.interactive {
       home.shellAliases = {
         o = "bat --plain";
         p = "bat --plain --paging=auto";

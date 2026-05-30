@@ -1,6 +1,6 @@
 { config, lib, ... }:
 
-lib.mkIf config.isPC {
+lib.mkIf config.flags.profiles.graphical {
   programs.dconf.enable = true;
 
   home-manager.sharedModules = [

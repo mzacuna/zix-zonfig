@@ -5,7 +5,7 @@
 #   Nix paths on PATH.
 # - HM level: home-manager's fish integrations (direnv, starship, aliases)
 #   only land in ~/.config/fish/config.fish when HM's fish is enabled.
-lib.mkIf config.isPC {
+lib.mkIf config.flags.profiles.interactive {
   programs.fish = {
     enable = true;
     interactiveShellInit = ''
