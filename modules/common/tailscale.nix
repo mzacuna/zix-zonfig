@@ -1,9 +1,18 @@
-{ config, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
   inherit (config) hostname username;
 
   tailnetIdentityFile = "~/.ssh/id_ed25519_tailnet";
+
+  # Use ghostty-bin in Darwin because we use the cask.
+  ghosttyTerminfo =
+    if config.flags.system.darwin then pkgs.ghostty-bin.terminfo else pkgs.ghostty.terminfo;
 
   tailnetHosts = [
     "acheron"
@@ -20,6 +29,11 @@ let
   peerUserKeys = lib.attrValues (removeAttrs tailnetUserKeys [ hostname ]);
 in
 {
+  # Install Ghostty's terminfo on targets.
+  environment.systemPackages = lib.optionals config.flags.tailnet.ssh.target [
+    ghosttyTerminfo
+  ];
+
   users.users.${username}.openssh.authorizedKeys.keys =
     lib.optionals config.flags.tailnet.ssh.target peerUserKeys;
 
