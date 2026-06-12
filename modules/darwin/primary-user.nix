@@ -1,5 +1,5 @@
-{ config, ... }:
+{ username, ... }:
 
 {
-  system.primaryUser = config.username;
+  system.primaryUser = username;
 }

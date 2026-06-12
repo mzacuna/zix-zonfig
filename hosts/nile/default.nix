@@ -1,9 +1,6 @@
-{ config, ... }:
+{ username, ... }:
 
 {
-  username = "martin";
-  hostname = "nile";
-
   formFactor = "laptop";
 
   flags.profiles = {
@@ -11,10 +8,7 @@
     work = true;
   };
 
-  home-manager.users."${config.username}".home = {
-    stateVersion = "25.05";
-    homeDirectory = config.users.users."${config.username}".home;
-  };
+  home-manager.users.${username}.home.stateVersion = "25.05";
 
   system.stateVersion = 6;
 }

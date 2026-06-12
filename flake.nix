@@ -77,12 +77,31 @@
         "x86_64-linux"
       ];
 
-      specialArgs = { inherit inputs lib; };
+      specialArgsFor =
+        {
+          host,
+          username,
+        }:
+        {
+          inherit
+            inputs
+            lib
+            username
+            ;
+          hostname = host;
+        };
 
       sharedModules = host: [
         ./lib/options.nix
         ./modules/common
         (./hosts + "/${host}")
+
+        (
+          { hostname, username, ... }:
+          {
+            inherit hostname username;
+          }
+        )
 
         (
           { ... }:
@@ -109,10 +128,12 @@
       mkNixos =
         {
           host,
+          username ? "martin",
           system ? "x86_64-linux",
         }:
         nixpkgs.lib.nixosSystem {
-          inherit system specialArgs;
+          inherit system;
+          specialArgs = specialArgsFor { inherit host username; };
           modules = sharedModules host ++ [
             ./modules/linux
             inputs.home-manager.nixosModules.home-manager
@@ -124,10 +145,12 @@
       mkDarwin =
         {
           host,
+          username ? "martin",
           system ? "aarch64-darwin",
         }:
         nix-darwin.lib.darwinSystem {
-          inherit system specialArgs;
+          inherit system;
+          specialArgs = specialArgsFor { inherit host username; };
           modules = sharedModules host ++ [
             ./modules/darwin
             home-manager.darwinModules.home-manager

@@ -1,10 +1,7 @@
-{ config, ... }:
+{ config, username, ... }:
 
 {
   imports = [ ./hardware.nix ];
-
-  username = "martin";
-  hostname = "acheron";
 
   formFactor = "desktop";
 
@@ -12,10 +9,7 @@
 
   gpu = "nvidia";
 
-  home-manager.users."${config.username}".home = {
-    inherit (config.system) stateVersion;
-    homeDirectory = config.users.users."${config.username}".home;
-  };
+  home-manager.users.${username}.home.stateVersion = config.system.stateVersion;
 
   system.stateVersion = "25.05";
 }

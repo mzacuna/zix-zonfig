@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  username,
   ...
 }:
 
@@ -10,10 +11,9 @@ let
     flags
     hostname
     hosts
-    username
     ;
   inherit (lib.attrsets) attrValues genAttrs optionalAttrs;
-  inherit (lib.lists) optionals remove singleton;
+  inherit (lib.lists) optionals remove;
   inherit (lib.trivial) flip;
 
   tailnetIdentityFile = "~/.ssh/id_ed25519_tailnet";
@@ -36,14 +36,12 @@ in
 
   users.users.${username}.openssh.authorizedKeys.keys = optionals flags.tailnet.ssh.target peerKeys;
 
-  home-manager.sharedModules = singleton {
-    programs.ssh.settings =
-      genAttrs peerHosts (host: {
-        HostName = host;
-        User = username;
-        IdentityFile = tailnetIdentityFile;
-        IdentitiesOnly = true;
-      })
-      |> optionalAttrs flags.tailnet.ssh.client;
-  };
+  home-manager.users.${username}.programs.ssh.settings =
+    genAttrs peerHosts (host: {
+      HostName = host;
+      User = username;
+      IdentityFile = tailnetIdentityFile;
+      IdentitiesOnly = true;
+    })
+    |> optionalAttrs flags.tailnet.ssh.client;
 }

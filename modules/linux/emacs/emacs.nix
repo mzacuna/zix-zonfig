@@ -2,11 +2,12 @@
   config,
   pkgs,
   lib,
+  username,
   ...
 }:
 
 lib.mkIf config.flags.profiles.graphical {
-  home-manager.sharedModules =
+  home-manager.users.${username} =
     let
       tree-sitter-parsers = grammars: [
         grammars.tree-sitter-css
@@ -30,16 +31,14 @@ lib.mkIf config.flags.profiles.graphical {
         (epkgs.treesit-grammars.with-grammars (grammars: tree-sitter-parsers grammars))
       ];
     in
-    [
-      {
-        home.packages = [
-          (pkgs.emacsWithPackagesFromUsePackage {
-            config = ./init.el;
-            defaultInitFile = true;
-            package = pkgs.emacs-pgtk;
-            inherit extraEmacsPackages;
-          })
-        ];
-      }
-    ];
+    {
+      home.packages = [
+        (pkgs.emacsWithPackagesFromUsePackage {
+          config = ./init.el;
+          defaultInitFile = true;
+          package = pkgs.emacs-pgtk;
+          inherit extraEmacsPackages;
+        })
+      ];
+    };
 }

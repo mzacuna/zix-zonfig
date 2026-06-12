@@ -1,12 +1,13 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  username,
+  ...
+}:
 
 lib.mkIf config.flags.profiles.interactive {
-  home-manager.sharedModules = [
-    {
-      programs.nushell = {
-        enable = true;
-        configFile.source = ./config.nu;
-      };
-    }
-  ];
+  home-manager.users.${username}.programs.nushell = {
+    enable = true;
+    configFile.source = ./config.nu;
+  };
 }

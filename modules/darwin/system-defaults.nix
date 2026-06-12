@@ -1,4 +1,4 @@
-{ ... }:
+{ username, ... }:
 
 {
   system.defaults = {
@@ -117,5 +117,5 @@
   };
 
   # Ensure screenshots directory exists
-  home-manager.sharedModules = [ { home.file."Pictures/Screenshots/.keep".text = ""; } ];
+  home-manager.users.${username}.home.file."Pictures/Screenshots/.keep".text = "";
 }

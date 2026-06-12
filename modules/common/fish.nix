@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  username,
+  ...
+}:
 
 # Fish is enabled at both layers on purpose:
 # - System level: needed on macOS, otherwise fish in Ghostty doesn't see any
@@ -8,14 +13,11 @@
 lib.mkIf config.flags.profiles.interactive {
   programs.fish = {
     enable = true;
+
     interactiveShellInit = ''
       set fish_greeting # Disable greeting
     '';
   };
 
-  home-manager.sharedModules = [
-    {
-      programs.fish.enable = true;
-    }
-  ];
+  home-manager.users.${username}.programs.fish.enable = true;
 }

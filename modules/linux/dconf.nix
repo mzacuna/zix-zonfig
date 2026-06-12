@@ -1,16 +1,17 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  username,
+  ...
+}:
 
 lib.mkIf config.flags.profiles.graphical {
   programs.dconf.enable = true;
 
-  home-manager.sharedModules = [
-    {
-      dconf.settings = {
-        "org/gnome/desktop/interface" = {
-          color-scheme = "prefer-dark";
-          icon-theme = "Papirus-Dark";
-        };
-      };
-    }
-  ];
+  home-manager.users.${username}.dconf.settings = {
+    "org/gnome/desktop/interface" = {
+      color-scheme = "prefer-dark";
+      icon-theme = "Papirus-Dark";
+    };
+  };
 }

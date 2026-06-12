@@ -1,4 +1,4 @@
-{ ... }:
+{ username, ... }:
 
 {
   services.openssh = {
@@ -14,10 +14,8 @@
     };
   };
 
-  home-manager.sharedModules = [
-    {
-      programs.ssh.enable = true;
-      services.ssh-agent.enable = true;
-    }
-  ];
+  home-manager.users.${username} = {
+    programs.ssh.enable = true;
+    services.ssh-agent.enable = true;
+  };
 }

@@ -1,12 +1,13 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  username,
+  ...
+}:
 
 lib.mkIf config.flags.profiles.graphical {
-  home-manager.sharedModules = [
-    {
-      xdg.userDirs = {
-        enable = true;
-        setSessionVariables = false;
-      };
-    }
-  ];
+  home-manager.users.${username}.xdg.userDirs = {
+    enable = true;
+    setSessionVariables = false;
+  };
 }

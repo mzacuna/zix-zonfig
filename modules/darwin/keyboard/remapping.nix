@@ -2,11 +2,12 @@
   config,
   pkgs,
   inputs,
+  username,
   ...
 }:
 
 let
-  home = config.users.users.${config.username}.home;
+  home = config.users.users.${username}.home;
   configPath = "Documents/kanata-tangent-config.kbd";
 in
 {
@@ -14,13 +15,11 @@ in
 
   environment.systemPackages = [ pkgs.kanata ];
 
-  home-manager.sharedModules = [
-    {
-      home.file."${configPath}".source = "${inputs.tangent}/mac/kanata.kbd";
+  home-manager.users.${username}.home = {
+    file."${configPath}".source = "${inputs.tangent}/mac/kanata.kbd";
 
-      home.shellAliases.kanata-restart = "sudo launchctl kickstart -k system/org.nixos.kanata";
-    }
-  ];
+    shellAliases.kanata-restart = "sudo launchctl kickstart -k system/org.nixos.kanata";
+  };
 
   launchd.daemons.kanata.serviceConfig = {
     ProgramArguments = [

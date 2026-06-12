@@ -1,10 +1,14 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  username,
+  ...
+}:
 
 lib.mkIf config.flags.profiles.interactive {
-  home-manager.sharedModules = [
-    {
-      home.sessionVariables.BAT_PAGING = "never";
-      programs.bat.enable = true;
-    }
-  ];
+  home-manager.users.${username} = {
+    programs.bat.enable = true;
+
+    home.sessionVariables.BAT_PAGING = "never";
+  };
 }

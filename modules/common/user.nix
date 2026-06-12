@@ -2,12 +2,13 @@
   config,
   lib,
   pkgs,
+  username,
   ...
 }:
 
 {
-  users.users."${config.username}" = {
-    home = if pkgs.stdenv.isLinux then "/home/${config.username}" else "/Users/${config.username}";
+  users.users.${username} = {
+    home = if pkgs.stdenv.isLinux then "/home/${username}" else "/Users/${username}";
   }
   // lib.optionalAttrs pkgs.stdenv.isLinux {
     isNormalUser = true;

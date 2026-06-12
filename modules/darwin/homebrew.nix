@@ -1,4 +1,9 @@
-{ inputs, config, ... }:
+{
+  config,
+  inputs,
+  username,
+  ...
+}:
 
 let
   homebrewEnv = {
@@ -23,7 +28,7 @@ in
   nix-homebrew = {
     enable = true;
 
-    user = config.username;
+    user = username;
     taps = {
       "homebrew/homebrew-core" = inputs.homebrew-core;
       "homebrew/homebrew-cask" = inputs.homebrew-cask;

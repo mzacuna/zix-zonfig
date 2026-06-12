@@ -2,15 +2,16 @@
   config,
   pkgs,
   lib,
+  username,
   ...
 }:
 
 lib.mkIf config.flags.profiles.development {
-  home-manager.sharedModules = [
-    {
-      programs.codex.enable = true;
+  home-manager.users.${username} = {
+    programs = {
+      codex.enable = true;
 
-      programs.claude-code = {
+      claude-code = {
         enable = true;
         package = pkgs.claude-code;
 
@@ -30,8 +31,8 @@ lib.mkIf config.flags.profiles.development {
           includeCoAuthoredBy = false;
         };
       };
+    };
 
-      home.packages = [ pkgs.claude-agent-acp ];
-    }
-  ];
+    home.packages = [ pkgs.claude-agent-acp ];
+  };
 }
