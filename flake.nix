@@ -22,6 +22,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    helium = {
+      url = "github:amaanq/helium-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-darwin = {
       url = "github:nix-darwin/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -81,11 +86,13 @@
         {
           host,
           username,
+          system,
         }:
         {
           inherit
             inputs
             lib
+            system
             username
             ;
           hostname = host;
@@ -133,7 +140,7 @@
         }:
         nixpkgs.lib.nixosSystem {
           inherit system;
-          specialArgs = specialArgsFor { inherit host username; };
+          specialArgs = specialArgsFor { inherit host username system; };
           modules = sharedModules host ++ [
             ./modules/linux
             inputs.home-manager.nixosModules.home-manager
@@ -150,7 +157,7 @@
         }:
         nix-darwin.lib.darwinSystem {
           inherit system;
-          specialArgs = specialArgsFor { inherit host username; };
+          specialArgs = specialArgsFor { inherit host username system; };
           modules = sharedModules host ++ [
             ./modules/darwin
             home-manager.darwinModules.home-manager

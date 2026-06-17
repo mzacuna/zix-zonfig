@@ -122,6 +122,26 @@
         "type": "github"
       }
     },
+    "helium": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781262673,
+        "narHash": "sha256-hiG17+E2KNLPW1Z5CXnTAAgqDCsIpDOS+x7v68vUhQM=",
+        "owner": "amaanq",
+        "repo": "helium-flake",
+        "rev": "de0cfb2a39d90c135e8277f7ec1215a2ae315912",
+        "type": "github"
+      },
+      "original": {
+        "owner": "amaanq",
+        "repo": "helium-flake",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -286,6 +306,7 @@
         "agenix": "agenix",
         "claude-code": "claude-code",
         "emacs-overlay": "emacs-overlay",
+        "helium": "helium",
         "home-manager": "home-manager_2",
         "homebrew-cask": "homebrew-cask",
         "homebrew-core": "homebrew-core",
