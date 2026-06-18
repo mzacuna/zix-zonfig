@@ -17,7 +17,6 @@
 
       # Media and graphics
       pkgs.obs-studio # Recording/streaming
-      pkgs.haruna # Media player
       pkgs.gimp3-with-plugins # Graphics editor
 
       # Downloading and torrenting

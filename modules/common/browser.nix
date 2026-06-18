@@ -10,7 +10,6 @@
 
 let
   inherit (lib.attrsets)
-    genAttrs
     mapAttrs'
     mapAttrsToList
     nameValuePair
@@ -18,10 +17,9 @@ let
     ;
   inherit (lib.generators) toPlist;
   inherit (lib.lists) singleton;
-  inherit (lib.meta) getExe;
+  inherit (lib.meta) getExe getExe';
   inherit (lib.modules) mkAfter mkIf mkMerge;
   inherit (lib.strings) concatStringsSep hasSuffix toJSON;
-  inherit (lib.trivial) const;
 
   isDarwin = hasSuffix "-darwin" system;
   isLinux = hasSuffix "-linux" system;
@@ -164,20 +162,28 @@ mkMerge [
                 seedPreferences ".config/${bundleId}/Default/Preferences"
               );
 
+              # Merge defaults into mimeapps.list
+              activation.heliumMimeDefaults =
+                let
+                  desktop = "helium.desktop";
+                  types = [
+                    "text/html"
+                    "application/xhtml+xml"
+                    "x-scheme-handler/http"
+                    "x-scheme-handler/https"
+                    "x-scheme-handler/about"
+                    "x-scheme-handler/unknown"
+                  ];
+                in
+                lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+                  run ${getExe' pkgs.xdg-utils "xdg-mime"} default ${desktop} ${concatStringsSep " " types}
+                '';
+
               sessionVariables = {
                 BROWSER = getExe helium;
                 DEFAULT_BROWSER = getExe helium;
               };
             };
-
-            xdg.mimeApps.defaultApplications = genAttrs [
-              "text/html"
-              "application/xhtml+xml"
-              "x-scheme-handler/http"
-              "x-scheme-handler/https"
-              "x-scheme-handler/about"
-              "x-scheme-handler/unknown"
-            ] (const "helium.desktop");
           };
       }
     )
