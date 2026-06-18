@@ -6,7 +6,6 @@
     "firefox"
     "brave-browser"
     "thunderbird"
-    "bitwarden"
     "discord"
     "iina"
     "transmission"

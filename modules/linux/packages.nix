@@ -23,8 +23,6 @@
       # Downloading and torrenting
       pkgs.qbittorrent # Torrent client
 
-      pkgs.bitwarden-desktop # Password manager
-
       # Browsers
       pkgs.brave # Privacy-focused Chromium-based browser
       pkgs.firefox # Browser by Mozilla
