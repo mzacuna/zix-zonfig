@@ -10,26 +10,64 @@
 
 let
   inherit (lib.attrsets) optionalAttrs;
-  inherit (lib.modules) mkIf mkMerge;
   inherit (lib.lists) singleton;
-  inherit (lib.strings) hasSuffix;
+  inherit (lib.meta) getExe getExe';
+  inherit (lib.modules) mkAfter mkIf mkMerge;
+  inherit (lib.strings) concatStringsSep hasSuffix toJSON;
+
+  isDarwin = hasSuffix "-darwin" system;
+  isLinux = hasSuffix "-linux" system;
+
+  bundleId = "net.imput.helium";
+
+  preferences = {
+    helium.completed_onboarding = true;
+    helium.services.user_consented = true;
+
+    helium.browser.layout = 2; # Vertical tabs.
+    helium.browser.rounded_frame = false;
+    helium.browser.new_tab_next_to_active = true;
+
+    bookmark_bar.show_on_all_tabs = true;
+    download.prompt_for_download = true; # Ask where to save each download.
+  };
+
+  preferencesJson = pkgs.writeText "helium-preferences.json" (toJSON preferences);
+
+  seedPreferences = rel: ''
+    prefs="$HOME/${rel}"
+    if [ ! -e "$prefs" ]; then
+      $DRY_RUN_CMD mkdir -p "$(dirname "$prefs")"
+      $DRY_RUN_CMD install -m600 ${preferencesJson} "$prefs"
+    fi
+  '';
 in
 mkMerge [
-  (optionalAttrs (hasSuffix "-darwin" system) (
+  # The subset of declarative macOS config I managed to get to work reliably.
+  (optionalAttrs isDarwin (
     mkIf config.flags.profiles.graphical {
-      # That's it.
       homebrew.casks = singleton "helium-browser";
+
+      system.activationScripts.postActivation.text = mkAfter ''
+        consoleUser="$(/usr/bin/stat -f%Su /dev/console)"
+        if [ -n "$consoleUser" ] && [ "$consoleUser" != "root" ]; then
+          /usr/bin/sudo -u "$consoleUser" ${getExe pkgs.defaultbrowser} helium
+        fi
+      '';
+
+      home-manager.users.${username} =
+        { lib, ... }:
+        {
+          home.activation.heliumPreferences = lib.hm.dag.entryAfter [ "writeBoundary" ] (
+            seedPreferences "Library/Application Support/${bundleId}/Default/Preferences"
+          );
+        };
     }
   ))
 
-  (optionalAttrs (hasSuffix "-linux" system) (
+  (optionalAttrs isLinux (
     mkIf config.flags.profiles.graphical (
       let
-        inherit (lib.meta) getExe getExe';
-        inherit (lib.strings) concatStringsSep toJSON;
-
-        bundleId = "net.imput.helium";
-
         ublockId = "blockjmkbacgjkknlgpkjjiijinjdanf";
         ublock = {
           toOverwrite.filters = [
@@ -68,20 +106,6 @@ mkMerge [
           "3rdparty".extensions.${ublockId} = ublock;
         };
 
-        preferences = {
-          helium.completed_onboarding = true;
-          helium.services.user_consented = true;
-
-          helium.browser.layout = 2; # Vertical tabs.
-          helium.browser.rounded_frame = false;
-          helium.browser.new_tab_next_to_active = true;
-
-          bookmark_bar.show_on_all_tabs = true;
-          download.prompt_for_download = true; # Ask where to save each download.
-        };
-
-        preferencesJson = pkgs.writeText "helium-preferences.json" (toJSON preferences);
-
         helium = inputs.helium.packages.${system}.default;
       in
       {
@@ -93,13 +117,9 @@ mkMerge [
             home = {
               packages = singleton helium;
 
-              activation.heliumPreferences = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-                prefs="$HOME/.config/${bundleId}/Default/Preferences"
-                if [ ! -e "$prefs" ]; then
-                  $DRY_RUN_CMD mkdir -p "$(dirname "$prefs")"
-                  $DRY_RUN_CMD install -m600 ${preferencesJson} "$prefs"
-                fi
-              '';
+              activation.heliumPreferences = lib.hm.dag.entryAfter [ "writeBoundary" ] (
+                seedPreferences ".config/${bundleId}/Default/Preferences"
+              );
 
               # Merge defaults into mimeapps.list
               activation.heliumMimeDefaults =
