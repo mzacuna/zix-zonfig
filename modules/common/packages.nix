@@ -14,6 +14,7 @@
     pkgs.killall # Kill all
     pkgs.fd # Modern alternative to 'find'
     pkgs.ripgrep # Modern alternative to 'grep'
+    pkgs.jq # CLI JSON processor
     pkgs.jc # Converts many outputs to JSON
     pkgs.fzf # Fuzzy finder
     pkgs.rage # Encryption tool
