@@ -9,163 +9,83 @@
 }:
 
 let
-  inherit (lib.attrsets)
-    mapAttrs'
-    mapAttrsToList
-    nameValuePair
-    optionalAttrs
-    ;
-  inherit (lib.generators) toPlist;
+  inherit (lib.attrsets) optionalAttrs;
+  inherit (lib.modules) mkIf mkMerge;
   inherit (lib.lists) singleton;
-  inherit (lib.meta) getExe getExe';
-  inherit (lib.modules) mkAfter mkIf mkMerge;
-  inherit (lib.strings) concatStringsSep hasSuffix toJSON;
-
-  isDarwin = hasSuffix "-darwin" system;
-  isLinux = hasSuffix "-linux" system;
-
-  bundleId = "net.imput.helium";
-
-  ublockId = "blockjmkbacgjkknlgpkjjiijinjdanf";
-  ublock = {
-    toOverwrite.filters = [
-      # Shorts open in the normal /watch player.
-      ''||youtube.com/shorts/$document,uritransform=/^https:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/([^\/?#]+)/https:\/\/www.youtube.com\/watch?v=$1/''
-    ];
-
-    userSettings = [
-      [
-        "userFiltersTrusted"
-        "true"
-      ]
-    ];
-  };
-
-  # Force-installed via ExtensionInstallForcelist on Linux. On darwin
-  # we have to install them by hand, because force-installing them
-  # there is a trap. darwin reads Chrome policy from /Library/Managed
-  # Preferences, a directory it rebuilds at login from configuration
-  # profiles. Since we don't "ship" any profile, the plist left there
-  # isn't in effect when Helium starts after a cold boot, and Chromium
-  # uninstalls a force-installed extension whose policy it can't see,
-  # obliterating its data. If you install it by hand, an extension
-  # belongs to the profile instead of the policy, so this ceases to be
-  # a problem.
-  #
-  # Linux reads the policy straight from a file in /etc, so it's
-  # always there.
-  forcelistExtensions = [
-    "mnjggcdmjocbbbhaepdhchncahnbgone" # SponsorBlock
-    "jinjaccalgkegednnccohejagnlnfdag" # Violentmonkey
-    "eimadpbcbfnmbkopoojfekhnkhdbieeh" # Dark Reader
-    "nngceckbapebfimnlniiiahkandclblb" # Bitwarden
-    "cdglnehniifkbagbbombnjghhcihifij" # Kagi Search
-  ];
-
-  policy = {
-    DefaultBrowserSettingEnabled = false; # Don't prompt to set as default.
-    BatterySaverModeAvailability = 0; # Never throttle background tabs.
-    DeveloperToolsAvailability = 1; # Always allow devtools.
-
-    DefaultSearchProviderEnabled = true;
-    DefaultSearchProviderName = "Kagi";
-    DefaultSearchProviderSearchURL = "https://kagi.com/search?q={searchTerms}";
-    DefaultSearchProviderSuggestURL = "https://kagi.com/api/autosuggest?q={searchTerms}";
-    SearchSuggestEnabled = true;
-
-    "3rdparty".extensions.${ublockId} = ublock;
-  };
-
-  preferences = {
-    helium.completed_onboarding = true;
-    helium.services.user_consented = true;
-
-    helium.browser.layout = 2; # Vertical tabs.
-    helium.browser.rounded_frame = false;
-    helium.browser.new_tab_next_to_active = true;
-
-    bookmark_bar.show_on_all_tabs = true;
-    download.prompt_for_download = true; # Ask where to save each download.
-  };
-
-  preferencesJson = pkgs.writeText "helium-preferences.json" (toJSON preferences);
-
-  seedPreferences = rel: ''
-    prefs="$HOME/${rel}"
-    if [ ! -e "$prefs" ]; then
-      $DRY_RUN_CMD mkdir -p "$(dirname "$prefs")"
-      $DRY_RUN_CMD install -m600 ${preferencesJson} "$prefs"
-    fi
-  '';
+  inherit (lib.strings) hasSuffix;
 in
 mkMerge [
-  (optionalAttrs isDarwin (
+  (optionalAttrs (hasSuffix "-darwin" system) (
+    mkIf config.flags.profiles.graphical {
+      # That's it.
+      homebrew.casks = singleton "helium-browser";
+    }
+  ))
+
+  (optionalAttrs (hasSuffix "-linux" system) (
     mkIf config.flags.profiles.graphical (
       let
-        managedDir = "/Library/Managed Preferences";
+        inherit (lib.meta) getExe getExe';
+        inherit (lib.strings) concatStringsSep toJSON;
 
-        managedPrefs = {
-          ${bundleId} = policy;
-        }
-        // (
-          policy."3rdparty".extensions
-          |> mapAttrs' (id: prefs: nameValuePair "${bundleId}.extensions.${id}" prefs)
-        );
+        bundleId = "net.imput.helium";
 
-        # Build a domain's plist in the store, and the cp line that installs it.
-        copyPlist =
-          domain: prefs:
-          ''cp -f ${
-            pkgs.writeText "${domain}.plist" (toPlist { escape = true; } prefs)
-          } "${managedDir}/${domain}.plist"'';
+        ublockId = "blockjmkbacgjkknlgpkjjiijinjdanf";
+        ublock = {
+          toOverwrite.filters = [
+            # Shorts open in the normal /watch player.
+            ''||youtube.com/shorts/$document,uritransform=/^https:\/\/(?:www\.|m\.)?youtube\.com\/shorts\/([^\/?#]+)/https:\/\/www.youtube.com\/watch?v=$1/''
+          ];
 
-        applyPolicies = pkgs.writeShellScript "helium-managed-prefs" ''
-          mkdir -p "${managedDir}"
-          ${managedPrefs |> mapAttrsToList copyPlist |> concatStringsSep "\n"}
-          killall cfprefsd 2>/dev/null || true
-        '';
-      in
-      {
-        homebrew.casks = singleton "helium-browser";
-
-        launchd.daemons.helium-managed-prefs.serviceConfig = {
-          RunAtLoad = true;
-          StandardErrorPath = "/var/log/helium-managed-prefs.log";
-          ProgramArguments = [
-            "/bin/sh"
-            "-c"
-            "/bin/wait4path /nix/store && exec ${applyPolicies}"
+          userSettings = [
+            [
+              "userFiltersTrusted"
+              "true"
+            ]
           ];
         };
 
-        system.activationScripts.postActivation.text = mkAfter ''
-          consoleUser="$(/usr/bin/stat -f%Su /dev/console)"
-          if [ -n "$consoleUser" ] && [ "$consoleUser" != "root" ]; then
-            /usr/bin/sudo -u "$consoleUser" ${getExe pkgs.defaultbrowser} helium
-          fi
-        '';
+        policy = {
+          DefaultBrowserSettingEnabled = false; # Don't prompt to set as default.
+          BatterySaverModeAvailability = 0; # Never throttle background tabs.
+          DeveloperToolsAvailability = 1; # Always allow devtools.
 
-        home-manager.users.${username} =
-          { lib, ... }:
-          {
-            home.activation.heliumPreferences = lib.hm.dag.entryAfter [ "writeBoundary" ] (
-              seedPreferences "Library/Application Support/${bundleId}/Default/Preferences"
-            );
-          };
-      }
-    )
-  ))
+          DefaultSearchProviderEnabled = true;
+          DefaultSearchProviderName = "Kagi";
+          DefaultSearchProviderSearchURL = "https://kagi.com/search?q={searchTerms}";
+          DefaultSearchProviderSuggestURL = "https://kagi.com/api/autosuggest?q={searchTerms}";
+          SearchSuggestEnabled = true;
 
-  (optionalAttrs isLinux (
-    mkIf config.flags.profiles.graphical (
-      let
-        helium = inputs.helium.packages.${system}.default;
-        linuxPolicy = policy // {
-          ExtensionInstallForcelist = forcelistExtensions;
+          # Force-installed extensions (uBO is bundled by Helium).
+          ExtensionInstallForcelist = [
+            "mnjggcdmjocbbbhaepdhchncahnbgone" # SponsorBlock
+            "jinjaccalgkegednnccohejagnlnfdag" # Violentmonkey
+            "eimadpbcbfnmbkopoojfekhnkhdbieeh" # Dark Reader
+            "nngceckbapebfimnlniiiahkandclblb" # Bitwarden
+            "cdglnehniifkbagbbombnjghhcihifij" # Kagi Search
+          ];
+
+          "3rdparty".extensions.${ublockId} = ublock;
         };
+
+        preferences = {
+          helium.completed_onboarding = true;
+          helium.services.user_consented = true;
+
+          helium.browser.layout = 2; # Vertical tabs.
+          helium.browser.rounded_frame = false;
+          helium.browser.new_tab_next_to_active = true;
+
+          bookmark_bar.show_on_all_tabs = true;
+          download.prompt_for_download = true; # Ask where to save each download.
+        };
+
+        preferencesJson = pkgs.writeText "helium-preferences.json" (toJSON preferences);
+
+        helium = inputs.helium.packages.${system}.default;
       in
       {
-        environment.etc."chromium/policies/managed/policies.json".text = toJSON linuxPolicy;
+        environment.etc."chromium/policies/managed/policies.json".text = toJSON policy;
 
         home-manager.users.${username} =
           { lib, ... }:
@@ -173,9 +93,13 @@ mkMerge [
             home = {
               packages = singleton helium;
 
-              activation.heliumPreferences = lib.hm.dag.entryAfter [ "writeBoundary" ] (
-                seedPreferences ".config/${bundleId}/Default/Preferences"
-              );
+              activation.heliumPreferences = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+                prefs="$HOME/.config/${bundleId}/Default/Preferences"
+                if [ ! -e "$prefs" ]; then
+                  $DRY_RUN_CMD mkdir -p "$(dirname "$prefs")"
+                  $DRY_RUN_CMD install -m600 ${preferencesJson} "$prefs"
+                fi
+              '';
 
               # Merge defaults into mimeapps.list
               activation.heliumMimeDefaults =
