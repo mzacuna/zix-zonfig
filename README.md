@@ -1,4 +1,4 @@
-# zix-zonfig
+# Snowman
 
 My Nix configuration for multiple machines.
 
@@ -18,5 +18,3 @@ lib/                              Custom options and a helper function
 hosts/<host>/                     Per-host settings and hardware configuration
 modules/{common,linux,darwin}/    Respectively: shared, NixOS, nix-darwin
 ```
-
-zoz
