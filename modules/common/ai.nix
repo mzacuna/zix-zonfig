@@ -1,16 +1,20 @@
 {
   config,
   lib,
+  pkgs,
   username,
   ...
 }:
 
 let
+  inherit (lib.lists) optionals;
   inherit (lib.meta) getExe;
   inherit (lib.strings) escapeShellArg toJSON;
+
+  linuxGraphical = config.flags.system.linux && config.flags.profiles.graphical;
+  t3code = pkgs.t3code.override { enableCodex = false; };
 in
-# TODO: maybe add another flag instead of this hack
-lib.mkIf (config.flags.profiles.development || config.hostname == "acheron") {
+lib.mkIf config.flags.profiles.ai {
   home-manager.users.${username} =
     {
       config,
@@ -44,41 +48,51 @@ lib.mkIf (config.flags.profiles.development || config.hostname == "acheron") {
         package = pkgs.claude-code;
       };
 
-      home.activation.claudeCodeSettings =
-        let
-          jq = getExe pkgs.jq;
-        in
-        lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          _path="${settingsPath}"
-          _declared=${escapeShellArg (toJSON settings)}
+      home = {
+        packages = [
+          pkgs.opencode
+          pkgs.pi-coding-agent
+        ];
+        # ++ optionals linuxGraphical [ t3code ];
+        # You could install T3 Code... when it gets stuff like being
+        # able to increase the font size. I can't see!
 
-          # A regular file may hold keys Claude added itself — keep them. A
-          # read-only store symlink from a prior generation has nothing worth
-          # keeping (it was unwritable), so drop it and rebuild from scratch.
-          _existing='{}'
-          if [ -L "$_path" ]; then
-            $DRY_RUN_CMD rm -f "$_path"
-          elif [ -f "$_path" ]; then
-            _read="$(${jq} -c . "$_path" 2>/dev/null || true)"
-            if [ -n "$_read" ]; then _existing="$_read"; fi
-          fi
+        activation.claudeCodeSettings =
+          let
+            jq = getExe pkgs.jq;
+          in
+          lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            _path="${settingsPath}"
+            _declared=${escapeShellArg (toJSON settings)}
 
-          # Declared keys win; every other key already in the file is preserved.
-          _merged="$(printf '%s' "$_existing" | ${jq} \
-            --argjson declared "$_declared" \
-            '(. * $declared)
-             + { "$schema": "https://json.schemastore.org/claude-code-settings.json" }' \
-            2>/dev/null || true)"
+            # A regular file may hold keys Claude added itself — keep them. A
+            # read-only store symlink from a prior generation has nothing worth
+            # keeping (it was unwritable), so drop it and rebuild from scratch.
+            _existing='{}'
+            if [ -L "$_path" ]; then
+              $DRY_RUN_CMD rm -f "$_path"
+            elif [ -f "$_path" ]; then
+              _read="$(${jq} -c . "$_path" 2>/dev/null || true)"
+              if [ -n "$_read" ]; then _existing="$_read"; fi
+            fi
 
-          # Only write when the merge produced something, so a transient error
-          # never clobbers a good file with an empty one.
-          if [ -n "$_merged" ]; then
-            mkdir -p "$(dirname "$_path")"
-            _tmp="$(mktemp)"
-            printf '%s\n' "$_merged" > "$_tmp"
-            chmod 600 "$_tmp"
-            $DRY_RUN_CMD mv "$_tmp" "$_path"
-          fi
-        '';
+            # Declared keys win; every other key already in the file is preserved.
+            _merged="$(printf '%s' "$_existing" | ${jq} \
+              --argjson declared "$_declared" \
+              '(. * $declared)
+               + { "$schema": "https://json.schemastore.org/claude-code-settings.json" }' \
+              2>/dev/null || true)"
+
+            # Only write when the merge produced something, so a transient error
+            # never clobbers a good file with an empty one.
+            if [ -n "$_merged" ]; then
+              mkdir -p "$(dirname "$_path")"
+              _tmp="$(mktemp)"
+              printf '%s\n' "$_merged" > "$_tmp"
+              chmod 600 "$_tmp"
+              $DRY_RUN_CMD mv "$_tmp" "$_path"
+            fi
+          '';
+      };
     };
 }

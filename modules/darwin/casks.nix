@@ -17,6 +17,5 @@
     "whatsapp"
     "spotify"
     "intellij-idea"
-    "codex-app"
   ];
 }

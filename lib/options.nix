@@ -60,6 +60,7 @@ in
       profiles = {
         interactive = mkFlag (config.formFactor != "server") "interactive user environment";
         graphical = mkFlag config.flags.profiles.interactive "graphical user environment";
+        ai = mkFlag config.flags.profiles.interactive "AI agent tooling";
         development = mkFlag false "developer configuration";
         work = mkFlag false "work configuration";
         gaming = mkFlag false "gaming configuration";
